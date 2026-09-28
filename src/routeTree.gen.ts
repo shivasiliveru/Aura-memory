@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiProposalsRouteImport } from './routes/api/proposals'
 import { Route as ApiRfpAnalyzeRouteImport } from './routes/api/rfp.analyze'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProposalsRoute = ApiProposalsRouteImport.update({
+  id: '/api/proposals',
+  path: '/api/proposals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
@@ -25,27 +31,31 @@ const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/proposals': typeof ApiProposalsRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/proposals': typeof ApiProposalsRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/proposals': typeof ApiProposalsRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/rfp/analyze'
+  fullPaths: '/' | '/api/proposals' | '/api/rfp/analyze'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/rfp/analyze'
-  id: '__root__' | '/' | '/api/rfp/analyze'
+  to: '/' | '/api/proposals' | '/api/rfp/analyze'
+  id: '__root__' | '/' | '/api/proposals' | '/api/rfp/analyze'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiProposalsRoute: typeof ApiProposalsRoute
   ApiRfpAnalyzeRoute: typeof ApiRfpAnalyzeRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/proposals': {
+      id: '/api/proposals'
+      path: '/api/proposals'
+      fullPath: '/api/proposals'
+      preLoaderRoute: typeof ApiProposalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rfp/analyze': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiProposalsRoute: ApiProposalsRoute,
   ApiRfpAnalyzeRoute: ApiRfpAnalyzeRoute,
 }
 export const routeTree = rootRouteImport
