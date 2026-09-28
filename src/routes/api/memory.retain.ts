@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { getMemoryStatus, retainMemory } from "@/services/hindsight/hindsight.server";
+import {
+  HindsightError,
+  getMemoryStatus,
+  retainMemory,
+} from "@/services/hindsight/hindsight.server";
 
 const schema = z.object({
   title: z.string().min(1),
@@ -20,13 +24,18 @@ export const Route = createFileRoute("/api/memory/retain")({
       POST: async ({ request }) => {
         const parsed = schema.safeParse(await request.json());
         if (!parsed.success) return Response.json({ error: "Invalid memory" }, { status: 400 });
-        const memory = await retainMemory({
-          id: `m-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          ...parsed.data,
-          industry: parsed.data.industry as never,
-        });
-        return Response.json({ memory, status: getMemoryStatus() });
+        try {
+          const memory = await retainMemory({
+            id: `m-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            ...parsed.data,
+            industry: parsed.data.industry as never,
+          });
+          return Response.json({ memory, status: await getMemoryStatus() });
+        } catch (err) {
+          if (!(err instanceof HindsightError)) throw err;
+          return Response.json({ error: err.message }, { status: err.status === 503 ? 503 : 502 });
+        }
       },
     },
   },

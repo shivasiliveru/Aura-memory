@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { outcomes, proposals } from "@/services/proposals/store.server";
-import { getMemoryStatus, retainMemory } from "@/services/hindsight/hindsight.server";
+import {
+  clients,
+  memories,
+  outcomes,
+  proposals,
+  saveStore,
+} from "@/services/proposals/store.server";
+import { extractLearning } from "@/services/learning/extract.server";
+import {
+  HindsightError,
+  getMemoryStatus,
+  retainMemory,
+} from "@/services/hindsight/hindsight.server";
 import type { Memory, ProposalOutcome } from "@/types";
 
 const schema = z.object({
@@ -34,25 +45,51 @@ export const Route = createFileRoute("/api/proposals/$id/outcome")({
         proposal.status = data.status;
         proposal.updatedAt = outcome.recordedAt;
 
+        const learning = await extractLearning(proposal, data);
+
+        // Re-recording an outcome updates the proposal's existing memory instead of duplicating it.
+        const previous = memories.find((m) => m.sourceProposalId === proposal.id);
         const memory: Memory = {
-          id: `m-${Date.now()}`,
-          title: `${proposal.title} — ${data.status[0].toUpperCase()}${data.status.slice(1)}`,
+          id: previous?.id ?? `m-${Date.now()}`,
+          title: `${proposal.title} — ${data.status.charAt(0).toUpperCase()}${data.status.slice(1)}`,
           sourceProposalId: proposal.id,
           industry: proposal.industry,
           outcome: data.status,
           clientType: proposal.clientName,
-          content: data.lessons || `Outcome recorded for ${proposal.title}.`,
-          lessons: data.lessons ? data.lessons.split(/\n+/).filter(Boolean) : [],
-          successfulPatterns: data.successfulFactors,
-          failedPatterns: data.failureFactors,
+          content: learning.summary,
+          lessons: learning.lessons,
+          successfulPatterns: learning.successfulPatterns,
+          failedPatterns: learning.failedPatterns,
+          rfpContext: learning.rfpContext,
+          clientPreferences: learning.clientPreferences,
+          recommendations: learning.recommendations,
+          extractedBy: learning.extractedBy,
+          ...(proposal.strategy ? { strategy: proposal.strategy } : {}),
           createdAt: outcome.recordedAt,
         };
 
-        // Hindsight RETAIN. Falls back to the local workspace store while
-        // Hindsight is not configured — the UI reports which mode ran.
-        const retained = await retainMemory(memory);
+        const client = clients.find((c) => c.id === proposal.clientId);
+        if (client && learning.clientPreferences.length) {
+          client.learnedPatterns = Array.from(
+            new Set([...client.learnedPatterns, ...learning.clientPreferences]),
+          );
+        }
 
-        return Response.json({ outcome, memory: retained, memoryStatus: getMemoryStatus() });
+        try {
+          const retained = await retainMemory(memory);
+          return Response.json({
+            outcome,
+            memory: retained,
+            memoryStatus: await getMemoryStatus(),
+          });
+        } catch (err) {
+          if (!(err instanceof HindsightError)) throw err;
+          await saveStore();
+          return Response.json(
+            { error: `Outcome saved, but Hindsight retain failed: ${err.message}`, outcome },
+            { status: err.status === 503 ? 503 : 502 },
+          );
+        }
       },
     },
   },

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { clients, proposals } from "@/services/proposals/store.server";
+import { clients, proposals, saveStore } from "@/services/proposals/store.server";
 
 const schema = z.object({
   name: z.string().min(1),
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/api/clients")({
           learnedPatterns: [],
         };
         clients.push(client);
+        await saveStore();
         return Response.json({ client }, { status: 201 });
       },
     },

@@ -1,13 +1,7 @@
 export type Outcome = "won" | "lost" | "pending";
 export type ProposalStatus = "draft" | "pending" | "won" | "lost";
 export type Industry =
-  | "Healthcare"
-  | "Banking"
-  | "FinTech"
-  | "SaaS"
-  | "Manufacturing"
-  | "Technology"
-  | "Other";
+  "Healthcare" | "Banking" | "FinTech" | "SaaS" | "Manufacturing" | "Technology" | "Other";
 
 export interface User {
   id: string;
@@ -74,6 +68,10 @@ export interface Proposal {
   value: number;
   strategy?: string;
   recommendationMemoryIds: string[];
+  /** RFP analysis the proposal was generated from. */
+  analysis?: RFPAnalysis;
+  /** Snapshot of what Hindsight recalled/reflected at generation time — backs "Why this proposal?". */
+  recommendation?: AgentRecommendation;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,12 +96,23 @@ export interface Memory {
   lessons: string[];
   successfulPatterns: string[];
   failedPatterns: string[];
+  /** Short description of the RFP this experience came from. */
+  rfpContext?: string;
+  /** Strategy the proposal followed. */
+  strategy?: string;
+  clientPreferences?: string[];
+  /** Concrete instructions for the next similar proposal. */
+  recommendations?: string[];
+  /** Whether lessons were structured by the LLM or taken as the user entered them. */
+  extractedBy?: "llm" | "user";
   createdAt: string;
 }
 
 export interface RecalledMemory extends Memory {
   relevance: number;
   relevanceReasons: string[];
+  /** Hindsight fact ids this experience was assembled from. */
+  factIds?: string[];
 }
 
 export interface AgentRecommendation {
@@ -111,6 +120,10 @@ export interface AgentRecommendation {
   strategy: string;
   successfulPatterns: string[];
   warnings: string[];
+  /** "Why this proposal" bullets, each tied to a recalled past proposal. */
+  reasoning: string[];
+  /** What produced the strategy: Hindsight reflect, the LLM over recalled memories, or neither. */
+  source: "hindsight-reflect" | "llm" | "none";
   basedOn: RecalledMemory[];
 }
 
@@ -132,6 +145,6 @@ export interface InsightsPayload {
 export interface MemoryProviderStatus {
   provider: "hindsight";
   connected: boolean;
-  mode: "live" | "local-heuristic";
+  mode: "live" | "not-configured" | "unreachable";
   message: string;
 }

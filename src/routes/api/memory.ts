@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/memory")({
       GET: async () =>
         Response.json({
           memories: [...memories].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-          status: getMemoryStatus(),
+          status: await getMemoryStatus(),
         }),
     },
   },

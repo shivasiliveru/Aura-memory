@@ -1,16 +1,35 @@
 import type { Industry, RFPAnalysis } from "@/types";
+import { analyzeRFPWithLLM, getLLMConfig } from "@/services/ai/llm.server";
 
 /**
  * RFP processing service.
  *
- * This is a deterministic text-extraction pass, not an LLM call. When an LLM is
- * connected after export, replace the body of `analyzeRFP` — the interface is
- * what the rest of the app depends on.
+ * Combines LLM-driven structured intelligence with deterministic fallback text extraction.
  */
 
-const SIGNALS: Record<string, string[]> = {
-  technical: ["integration", "api", "architecture", "migration", "latency", "uptime", "scalab", "cloud", "data model"],
-  compliance: ["hipaa", "soc 2", "gdpr", "pci", "audit", "compliance", "regulat", "privacy", "iso 27001"],
+const SIGNALS = {
+  technical: [
+    "integration",
+    "api",
+    "architecture",
+    "migration",
+    "latency",
+    "uptime",
+    "scalab",
+    "cloud",
+    "data model",
+  ],
+  compliance: [
+    "hipaa",
+    "soc 2",
+    "gdpr",
+    "pci",
+    "audit",
+    "compliance",
+    "regulat",
+    "privacy",
+    "iso 27001",
+  ],
   security: ["security", "encryption", "access control", "penetration", "zero trust"],
   evaluation: ["evaluation", "scoring", "criteria", "weighted", "shortlist"],
 };
@@ -30,17 +49,38 @@ export interface AnalyzeInput {
   title: string;
   clientName: string;
   industry: Industry;
-  deadline?: string;
+  deadline?: string | undefined;
   content: string;
 }
 
-export function analyzeRFP(input: AnalyzeInput): RFPAnalysis {
+export async function analyzeRFP(input: AnalyzeInput): Promise<RFPAnalysis> {
+  if (getLLMConfig()) {
+    try {
+      const llmResult = await analyzeRFPWithLLM(
+        input.content,
+        input.title,
+        input.clientName,
+        input.industry,
+      );
+      if (input.deadline) {
+        llmResult.timeline = `Submission due ${input.deadline} · ${llmResult.timeline}`;
+      }
+      return llmResult;
+    } catch (err) {
+      console.warn("LLM RFP analysis failed, falling back to signal parser:", err);
+    }
+  }
+
+  return localAnalyzeRFP(input);
+}
+
+function localAnalyzeRFP(input: AnalyzeInput): RFPAnalysis {
   const list = sentences(input.content);
   const bullets = list.filter((s) => /\b(must|shall|require|need|expect)\b/i.test(s)).slice(0, 6);
 
-  const technical = pick(list, SIGNALS.technical);
-  const compliance = pick(list, [...SIGNALS.compliance, ...SIGNALS.security]);
-  const evaluation = pick(list, SIGNALS.evaluation, 4);
+  const technical = pick(list, SIGNALS["technical"]);
+  const compliance = pick(list, [...SIGNALS["compliance"], ...SIGNALS["security"]]);
+  const evaluation = pick(list, SIGNALS["evaluation"], 4);
 
   const words = input.content
     .toLowerCase()
@@ -66,8 +106,12 @@ export function analyzeRFP(input: AnalyzeInput): RFPAnalysis {
       : list.slice(0, 4).length
         ? list.slice(0, 4)
         : ["No explicit requirements detected in the supplied text."],
-    technicalRequirements: technical.length ? technical : ["No specific technical requirements detected."],
-    complianceRequirements: compliance.length ? compliance : ["No explicit compliance requirements detected."],
+    technicalRequirements: technical.length
+      ? technical
+      : ["No specific technical requirements detected."],
+    complianceRequirements: compliance.length
+      ? compliance
+      : ["No explicit compliance requirements detected."],
     timeline: input.deadline
       ? `Submission due ${input.deadline}${timelineMatch ? ` · delivery signal: ${timelineMatch[0]}` : ""}`
       : timelineMatch

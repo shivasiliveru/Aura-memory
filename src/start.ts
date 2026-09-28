@@ -17,6 +17,16 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+// Serverless instances don't share memory, so every API request starts from the
+// latest persisted state (Upstash Redis on Vercel, a local JSON file in dev).
+const storeMiddleware = createMiddleware().server(async ({ next, request }) => {
+  if (new URL(request.url).pathname.startsWith("/api/")) {
+    const { loadStore } = await import("@/services/proposals/store.server");
+    await loadStore();
+  }
+  return next();
+});
+
 // Start installs this automatically when src/start.ts is absent; defining the
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
@@ -25,5 +35,5 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [errorMiddleware, storeMiddleware, csrfMiddleware],
 }));

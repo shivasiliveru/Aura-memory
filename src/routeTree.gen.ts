@@ -19,6 +19,7 @@ import { Route as ApiMemoryRecallRouteImport } from './routes/api/memory.recall'
 import { Route as ApiMemoryRetainRouteImport } from './routes/api/memory.retain'
 import { Route as ApiProposalsIdRouteImport } from './routes/api/proposals.$id'
 import { Route as ApiProposalsGenerateRouteImport } from './routes/api/proposals.generate'
+import { Route as ApiProposalsRefineSectionRouteImport } from './routes/api/proposals.refine-section'
 import { Route as ApiRfpAnalyzeRouteImport } from './routes/api/rfp.analyze'
 import { Route as ApiProposalsIdOutcomeRouteImport } from './routes/api/proposals.$id.outcome'
 
@@ -72,6 +73,12 @@ const ApiProposalsGenerateRoute = ApiProposalsGenerateRouteImport.update({
   path: '/generate',
   getParentRoute: () => ApiProposalsRoute,
 } as any)
+const ApiProposalsRefineSectionRoute =
+  ApiProposalsRefineSectionRouteImport.update({
+    id: '/refine-section',
+    path: '/refine-section',
+    getParentRoute: () => ApiProposalsRoute,
+  } as any)
 const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
   id: '/api/rfp/analyze',
   path: '/api/rfp/analyze',
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/api/memory/retain': typeof ApiMemoryRetainRoute
   '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
   '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/proposals/refine-section': typeof ApiProposalsRefineSectionRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
   '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
@@ -108,6 +116,7 @@ export interface FileRoutesByTo {
   '/api/memory/retain': typeof ApiMemoryRetainRoute
   '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
   '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/proposals/refine-section': typeof ApiProposalsRefineSectionRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
   '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
@@ -123,6 +132,7 @@ export interface FileRoutesById {
   '/api/memory/retain': typeof ApiMemoryRetainRoute
   '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
   '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/proposals/refine-section': typeof ApiProposalsRefineSectionRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
   '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/api/memory/retain'
     | '/api/proposals/$id'
     | '/api/proposals/generate'
+    | '/api/proposals/refine-section'
     | '/api/rfp/analyze'
     | '/api/proposals/$id/outcome'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/api/memory/retain'
     | '/api/proposals/$id'
     | '/api/proposals/generate'
+    | '/api/proposals/refine-section'
     | '/api/rfp/analyze'
     | '/api/proposals/$id/outcome'
   id:
@@ -167,6 +179,7 @@ export interface FileRouteTypes {
     | '/api/memory/retain'
     | '/api/proposals/$id'
     | '/api/proposals/generate'
+    | '/api/proposals/refine-section'
     | '/api/rfp/analyze'
     | '/api/proposals/$id/outcome'
   fileRoutesById: FileRoutesById
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProposalsGenerateRouteImport
       parentRoute: typeof ApiProposalsRoute
     }
+    '/api/proposals/refine-section': {
+      id: '/api/proposals/refine-section'
+      path: '/refine-section'
+      fullPath: '/api/proposals/refine-section'
+      preLoaderRoute: typeof ApiProposalsRefineSectionRouteImport
+      parentRoute: typeof ApiProposalsRoute
+    }
     '/api/rfp/analyze': {
       id: '/api/rfp/analyze'
       path: '/api/rfp/analyze'
@@ -310,11 +330,13 @@ const ApiProposalsIdRouteWithChildren = ApiProposalsIdRoute._addFileChildren(
 interface ApiProposalsRouteChildren {
   ApiProposalsIdRoute: typeof ApiProposalsIdRouteWithChildren
   ApiProposalsGenerateRoute: typeof ApiProposalsGenerateRoute
+  ApiProposalsRefineSectionRoute: typeof ApiProposalsRefineSectionRoute
 }
 
 const ApiProposalsRouteChildren: ApiProposalsRouteChildren = {
   ApiProposalsIdRoute: ApiProposalsIdRouteWithChildren,
   ApiProposalsGenerateRoute: ApiProposalsGenerateRoute,
+  ApiProposalsRefineSectionRoute: ApiProposalsRefineSectionRoute,
 }
 
 const ApiProposalsRouteWithChildren = ApiProposalsRoute._addFileChildren(

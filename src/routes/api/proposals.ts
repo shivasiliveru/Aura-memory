@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { clients, proposals } from "@/services/proposals/store.server";
-import type { Proposal } from "@/types";
+import { clients, proposals, saveStore } from "@/services/proposals/store.server";
+import type { AgentRecommendation, Proposal, RFPAnalysis } from "@/types";
 
 const schema = z.object({
   title: z.string().min(1),
@@ -10,10 +10,19 @@ const schema = z.object({
   value: z.number().optional(),
   rfpContent: z.string().default(""),
   sections: z
-    .array(z.object({ id: z.string(), title: z.string(), content: z.string(), informedBy: z.array(z.string()) }))
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        content: z.string(),
+        informedBy: z.array(z.string()),
+      }),
+    )
     .default([]),
   strategy: z.string().optional(),
   recommendationMemoryIds: z.array(z.string()).default([]),
+  analysis: z.custom<RFPAnalysis>((v) => !!v && typeof v === "object").optional(),
+  recommendation: z.custom<AgentRecommendation>((v) => !!v && typeof v === "object").optional(),
 });
 
 export const Route = createFileRoute("/api/proposals")({
@@ -52,12 +61,17 @@ export const Route = createFileRoute("/api/proposals")({
           rfpContent: data.rfpContent,
           sections: data.sections,
           value: data.value ?? 0,
-          strategy: data.strategy,
-          recommendationMemoryIds: data.recommendationMemoryIds,
+          ...(data.strategy === undefined ? {} : { strategy: data.strategy }),
+          recommendationMemoryIds: data.recommendation
+            ? data.recommendation.basedOn.map((m) => m.id)
+            : data.recommendationMemoryIds,
+          ...(data.analysis ? { analysis: data.analysis } : {}),
+          ...(data.recommendation ? { recommendation: data.recommendation } : {}),
           createdAt: now,
           updatedAt: now,
         };
         proposals.unshift(proposal);
+        await saveStore();
         return Response.json({ proposal }, { status: 201 });
       },
     },
