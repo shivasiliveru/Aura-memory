@@ -161,15 +161,16 @@ Refresh the app to see all proposals in the dashboard with the recalled memories
 2. **Add storage:** Project → Storage → Marketplace → **Upstash Redis** → create (free tier) and connect it to the project. This sets `KV_REST_API_URL` / `KV_REST_API_TOKEN` automatically. Serverless functions have no lasting disk, so proposals, outcomes and the memory mirror live here.
 3. **Add environment variables** (Project → Settings → Environment Variables):
 
-   | Variable             | Value                                |
-   | -------------------- | ------------------------------------ |
-   | `LLM_PROVIDER`       | `custom`                             |
-   | `LLM_BASE_URL`       | `https://api.groq.com/openai/v1`     |
-   | `LLM_MODEL`          | `openai/gpt-oss-120b`                |
-   | `LLM_API_KEY`        | your Groq key                        |
-   | `HINDSIGHT_API_KEY`  | your Hindsight Cloud key             |
-   | `HINDSIGHT_BASE_URL` | `https://api.hindsight.vectorize.io` |
-   | `HINDSIGHT_BANK_ID`  | e.g. `proposal-intelligence`         |
+   | Variable             | Value                                                           |
+   | -------------------- | --------------------------------------------------------------- |
+   | `LLM_PROVIDER`       | `custom`                                                        |
+   | `LLM_BASE_URL`       | `https://api.groq.com/openai/v1`                                |
+   | `LLM_MODEL`          | `openai/gpt-oss-120b`                                           |
+   | `LLM_API_KEY`        | your Groq key                                                   |
+   | `LLM_FALLBACK_MODEL` | `openai/gpt-oss-20b` (used when the main model is rate-limited) |
+   | `HINDSIGHT_API_KEY`  | your Hindsight Cloud key                                        |
+   | `HINDSIGHT_BASE_URL` | `https://api.hindsight.vectorize.io`                            |
+   | `HINDSIGHT_BANK_ID`  | e.g. `proposal-intelligence`                                    |
 
 4. **Deploy**, then seed the demo against the live URL:
 
@@ -177,7 +178,7 @@ Refresh the app to see all proposals in the dashboard with the recalled memories
    APP_URL=https://your-app.vercel.app npx tsx scripts/seed-demo.ts
    ```
 
-> The Groq free tier allows 8k tokens/minute. The app waits and retries on rate limits, so a proposal can take up to a minute; the full seed takes ~4 minutes.
+> The Groq free tier allows 8k tokens/minute and 200k tokens/day per model (about 10 full proposal cycles). The app waits and retries on short limits, and switches to `LLM_FALLBACK_MODEL` when the main model is exhausted. The full seed takes ~4-8 minutes.
 
 ### Other targets
 
