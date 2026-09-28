@@ -1,6 +1,6 @@
 import type { Outcome, Proposal } from "@/types";
 import { callLLM, getLLMConfig } from "@/services/ai/llm.server";
-import { LOST_FACTOR_OPTIONS, WON_FACTOR_OPTIONS } from "@/lib/outcome-factors";
+import { LOST_FACTOR_OPTIONS, WON_FACTOR_OPTIONS, canonicalPatterns } from "@/lib/outcome-factors";
 
 /**
  * Learning extraction: turns a proposal + its outcome + the user's feedback into
@@ -126,11 +126,14 @@ ${proposalDigest(proposal) || "No section content saved."}`;
         typeof parsed["rfpContext"] === "string" ? parsed["rfpContext"].trim() : base.rfpContext,
       // The user's own words stay first; the LLM adds to them rather than replacing them.
       lessons: unique([...base.lessons, ...strings(parsed["lessons"])]).slice(0, 8),
-      successfulPatterns: unique([
+      successfulPatterns: canonicalPatterns([
         ...feedback.successfulFactors,
         ...strings(parsed["successfulPatterns"]),
       ]),
-      failedPatterns: unique([...feedback.failureFactors, ...strings(parsed["failedPatterns"])]),
+      failedPatterns: canonicalPatterns([
+        ...feedback.failureFactors,
+        ...strings(parsed["failedPatterns"]),
+      ]),
       clientPreferences: strings(parsed["clientPreferences"]).slice(0, 5),
       recommendations: strings(parsed["recommendations"]).slice(0, 4),
       extractedBy: "llm",

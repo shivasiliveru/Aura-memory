@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Client, Memory, Proposal, ProposalOutcome } from "@/types";
+import { canonicalPatterns } from "@/lib/outcome-factors";
 
 /**
  * Starts empty: every client, proposal and memory comes from real use of the app
@@ -82,6 +83,11 @@ function replaceAll(data: Partial<Record<keyof StoreData, unknown>>) {
     const target = COLLECTIONS[key] as unknown[];
     target.length = 0;
     target.push(...value);
+  }
+  // Older memories may hold label variants; normalise them on read.
+  for (const m of memories) {
+    m.successfulPatterns = canonicalPatterns(m.successfulPatterns ?? []);
+    m.failedPatterns = canonicalPatterns(m.failedPatterns ?? []);
   }
 }
 

@@ -386,10 +386,14 @@ async function suiteData(memories: Memory[]) {
   );
 
   const insights = (await api("/api/insights")).data;
-  const iNorm = [...insights.successPatterns, ...insights.failurePatterns].map(
-    (p: { pattern: string }) => norm(p.pattern),
+  // A label may legitimately appear in both lists (helped one bid, hurt another); check each.
+  const merged = [insights.successPatterns, insights.failurePatterns].every(
+    (list: { pattern: string }[]) => {
+      const keys = list.map((p) => norm(p.pattern));
+      return new Set(keys).size === keys.length;
+    },
   );
-  check("Insights merge duplicate patterns", new Set(iNorm).size === iNorm.length);
+  check("Insights merge duplicate patterns", merged);
 }
 
 // ─────────────────────────────────────────────────────────────
