@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProposalsRouteImport } from './routes/api/proposals'
+import { Route as ApiProposalsGenerateRouteImport } from './routes/api/proposals.generate'
 import { Route as ApiRfpAnalyzeRouteImport } from './routes/api/rfp.analyze'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const ApiProposalsRoute = ApiProposalsRouteImport.update({
   path: '/api/proposals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProposalsGenerateRoute = ApiProposalsGenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
+  getParentRoute: () => ApiProposalsRoute,
+} as any)
 const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
   id: '/api/rfp/analyze',
   path: '/api/rfp/analyze',
@@ -31,31 +37,40 @@ const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/proposals': typeof ApiProposalsRoute
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/proposals': typeof ApiProposalsRoute
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/proposals': typeof ApiProposalsRoute
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
   '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/proposals' | '/api/rfp/analyze'
+  fullPaths:
+    '/' | '/api/proposals' | '/api/proposals/generate' | '/api/rfp/analyze'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/proposals' | '/api/rfp/analyze'
-  id: '__root__' | '/' | '/api/proposals' | '/api/rfp/analyze'
+  to: '/' | '/api/proposals' | '/api/proposals/generate' | '/api/rfp/analyze'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/proposals'
+    | '/api/proposals/generate'
+    | '/api/rfp/analyze'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiProposalsRoute: typeof ApiProposalsRoute
+  ApiProposalsRoute: typeof ApiProposalsRouteWithChildren
   ApiRfpAnalyzeRoute: typeof ApiRfpAnalyzeRoute
 }
 
@@ -75,6 +90,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProposalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/proposals/generate': {
+      id: '/api/proposals/generate'
+      path: '/generate'
+      fullPath: '/api/proposals/generate'
+      preLoaderRoute: typeof ApiProposalsGenerateRouteImport
+      parentRoute: typeof ApiProposalsRoute
+    }
     '/api/rfp/analyze': {
       id: '/api/rfp/analyze'
       path: '/api/rfp/analyze'
@@ -85,9 +107,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ApiProposalsRouteChildren {
+  ApiProposalsGenerateRoute: typeof ApiProposalsGenerateRoute
+}
+
+const ApiProposalsRouteChildren: ApiProposalsRouteChildren = {
+  ApiProposalsGenerateRoute: ApiProposalsGenerateRoute,
+}
+
+const ApiProposalsRouteWithChildren = ApiProposalsRoute._addFileChildren(
+  ApiProposalsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiProposalsRoute: ApiProposalsRoute,
+  ApiProposalsRoute: ApiProposalsRouteWithChildren,
   ApiRfpAnalyzeRoute: ApiRfpAnalyzeRoute,
 }
 export const routeTree = rootRouteImport
