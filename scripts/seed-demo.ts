@@ -24,6 +24,8 @@
 
 const BASE_URL = process.env["APP_URL"] || "http://localhost:3000";
 const LEAVE_FINAL = process.argv.includes("--leave-final");
+/** Only add the extra TRAINING experiences (use on an already-seeded deployment). */
+const TRAIN_ONLY = process.argv.includes("--train");
 
 interface RecalledMemory {
   id: string;
@@ -271,6 +273,153 @@ Evaluation criteria: migration safety, technical depth, timeline realism, cost.`
   },
 ];
 
+/**
+ * Extra training experiences (`--train`): fill coverage gaps — a loss for every industry,
+ * a Manufacturing win/loss pair, and a Healthcare win that fixes the Riverside mistake.
+ */
+const TRAINING: { rfp: DemoRFP; outcome: DemoOutcome }[] = [
+  {
+    rfp: {
+      title: "Real-Time Fraud Detection Engine",
+      clientName: "Kestrel Pay",
+      industry: "FinTech",
+      deadline: "2026-03-20",
+      estimatedValue: 290000,
+      content: `Kestrel Pay requests proposals for a real-time card fraud detection engine.
+Requirements:
+- Score 3,000 transactions per second with under 40ms added latency.
+- Reduce false declines by at least 20% while holding fraud losses flat.
+- Explainable decisions for chargeback disputes; PCI DSS scope unchanged.
+Evaluation criteria: evidence of model accuracy, latency guarantees, explainability, commercial terms.`,
+    },
+    outcome: {
+      status: "lost",
+      failureFactors: ["Weak ROI Explanation", "Generic Template Messaging"],
+      lessons:
+        "Debrief: we claimed accuracy gains but showed no benchmark on their data; the winner ran a 2-week proof on a sample of Kestrel's transactions. " +
+        "FinTech buyers want evidence — backtests, false-decline rates, latency percentiles — not promises.",
+    },
+  },
+  {
+    rfp: {
+      title: "Manufacturing Execution System Rollout",
+      clientName: "Apex Components",
+      industry: "Manufacturing",
+      deadline: "2026-02-28",
+      estimatedValue: 540000,
+      content: `Apex Components seeks an MES rollout across 5 production lines.
+Requirements:
+- Work-order tracking, quality checkpoints and machine integration (OPC UA).
+- No unplanned downtime during rollout; must avoid the Q4 peak season.
+- Operator training on every shift and on-site support during go-live.
+Evaluation criteria: rollout risk, downtime impact, operator adoption, total cost.`,
+    },
+    outcome: {
+      status: "won",
+      successfulFactors: [
+        "Specific Implementation Timeline",
+        "Customized Workflow Mapping",
+        "Quantified ROI / Payback Model",
+      ],
+      lessons:
+        "The plant director said the line-by-line rollout scheduled around peak season, with a downtime cost model per line, won it. " +
+        "Shift-by-shift operator training and on-site go-live support addressed their biggest adoption fear.",
+    },
+  },
+  {
+    rfp: {
+      title: "Supply Chain Visibility Platform",
+      clientName: "Norland Steel",
+      industry: "Manufacturing",
+      deadline: "2026-06-15",
+      estimatedValue: 460000,
+      content: `Norland Steel requests a supply chain visibility platform linking suppliers, plants and logistics.
+Requirements:
+- Real-time inventory and shipment tracking across 4 plants and 60 suppliers.
+- Integration with SAP and plant-floor systems with OT/IT network segregation.
+- Change management for planners and plant staff.
+Evaluation criteria: integration approach, OT security, adoption plan, cost.`,
+    },
+    outcome: {
+      status: "lost",
+      failureFactors: ["Missing Compliance Evidence", "Conceptual / Vague Implementation Plan"],
+      lessons:
+        "Debrief: the OT security team scored us lowest — we treated plant-floor integration like IT integration and never addressed network segregation. " +
+        "Our change-management section was generic; the winner had a named adoption lead per plant.",
+    },
+  },
+  {
+    rfp: {
+      title: "Digital Account Opening & KYC",
+      clientName: "Harbor Federal Bank",
+      industry: "Banking",
+      deadline: "2026-07-01",
+      estimatedValue: 380000,
+      content: `Harbor Federal Bank invites proposals for digital account opening with automated KYC/AML checks.
+Requirements:
+- Mobile and web onboarding under 8 minutes; identity verification and sanctions screening.
+- Integration with the core banking system and existing AML case management.
+- FFIEC and BSA/AML compliance evidence; go-live in 6 months.
+Evaluation criteria: compliance evidence, time to value, integration detail, price.`,
+    },
+    outcome: {
+      status: "lost",
+      failureFactors: ["Missing Compliance Evidence", "Conceptual / Vague Implementation Plan"],
+      lessons:
+        "Debrief: our 6-month plan left no time for the bank's regulatory review and model validation, so evaluators doubted the timeline. " +
+        "We described BSA/AML compliance in general terms instead of mapping each control to evidence.",
+    },
+  },
+  {
+    rfp: {
+      title: "Laboratory Results & Clinician Workflow Portal",
+      clientName: "Cedar Valley Health",
+      industry: "Healthcare",
+      deadline: "2026-08-30",
+      estimatedValue: 360000,
+      content: `Cedar Valley Health requests a portal for lab results delivery and clinician result review.
+Requirements:
+- Results to patients and clinicians within minutes; abnormal-result escalation.
+- HIPAA compliance; integration with Epic and the lab information system.
+- Clinician adoption across 7 departments with a training plan.
+Evaluation criteria: clinical workflow fit, compliance, adoption plan, cost.`,
+    },
+    outcome: {
+      status: "won",
+      successfulFactors: [
+        "Customized Workflow Mapping",
+        "Early Compliance Chapter",
+        "Named Workstream Leads",
+      ],
+      lessons:
+        "We applied the Riverside lesson: each department's result-review workflow was mapped with its clinicians before the proposal, and a clinician champion was named per department. " +
+        "The CMIO said this was the first proposal that looked like it understood their clinics.",
+    },
+  },
+  {
+    rfp: {
+      title: "Customer Data Platform Implementation",
+      clientName: "Orbit Retail Cloud",
+      industry: "SaaS",
+      deadline: "2026-09-10",
+      estimatedValue: 240000,
+      content: `Orbit Retail Cloud needs a customer data platform unifying product, billing and support data.
+Requirements:
+- Identity resolution across 12 million profiles; real-time audience sync.
+- GDPR consent management and data residency in the EU.
+- Predictable pricing as data volumes grow.
+Evaluation criteria: technical fit, privacy compliance, pricing predictability.`,
+    },
+    outcome: {
+      status: "lost",
+      failureFactors: ["Generic Pricing Language", "Competitive & Transparent Pricing"],
+      lessons:
+        "Debrief: our per-seat pricing surprised the buyer, whose cost driver is profile volume; the winner offered volume-tiered pricing with a cap. " +
+        "Pricing must follow the buyer's cost driver and show costs at their projected 3-year volumes.",
+    },
+  },
+];
+
 const RFP1: DemoRFP = {
   title: "Patient Portal & EHR Integration Platform",
   clientName: "St. Jude Health System",
@@ -323,6 +472,17 @@ Evaluation criteria: Security depth, compliance evidence, implementation specifi
 
 async function run() {
   console.log(`🚀 Seeding Proposal Intelligence demo via ${BASE_URL}\n`);
+
+  if (TRAIN_ONLY) {
+    console.log("🎓 Extra training experiences");
+    for (const { rfp, outcome } of TRAINING) {
+      console.log(`\n📋 ${rfp.industry}: ${rfp.title} (${rfp.clientName})`);
+      const { id } = await runRFP(rfp);
+      await recordOutcome(id, outcome);
+    }
+    console.log("\n✅ Training experiences retained.");
+    return;
+  }
 
   console.log("📚 Background history");
   for (const { rfp, outcome } of HISTORY) {
