@@ -41,7 +41,7 @@ export function Navbar({ activeTab, setActiveTab, memoryStatus, onNewProposal }:
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-foreground text-lg tracking-tight">
-                  Proposal Intelligence
+                  Aura Memory
                 </span>
                 <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary uppercase tracking-wider">
                   AI Agent

@@ -495,7 +495,7 @@ Evaluation criteria: Security depth, compliance evidence, implementation specifi
 // ─────────────────────────────────────────────────────────────
 
 async function run() {
-  console.log(`🚀 Seeding Proposal Intelligence demo via ${BASE_URL}\n`);
+  console.log(`🚀 Seeding Aura Memory demo via ${BASE_URL}\n`);
 
   if (TRAIN_ONLY) {
     console.log("🎓 Extra training experiences");

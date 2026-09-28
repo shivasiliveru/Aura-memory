@@ -38,7 +38,7 @@ export function InsightsView({ insights, proposals, memories }: InsightsViewProp
       {/* Header */}
       <div className="border-b border-border/60 pb-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-blue-500" /> Proposal Intelligence Analytics & Insights
+          <BarChart3 className="h-6 w-6 text-blue-500" /> Aura Memory Analytics & Insights
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
           Quantified performance trends, win rates by industry, and top memory-learned success

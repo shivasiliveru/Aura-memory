@@ -1,4 +1,4 @@
-# Proposal Intelligence — Implementation Plan
+# Aura Memory — Implementation Plan
 
 ## 1. Executive Summary & Existing Project Context
 

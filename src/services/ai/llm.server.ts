@@ -186,7 +186,7 @@ export async function analyzeRFPWithLLM(
   clientName: string,
   industry: Industry,
 ): Promise<RFPAnalysis> {
-  const systemPrompt = `You are an expert Proposal Intelligence RFP Analyst. Analyze the provided Request for Proposal (RFP) document and extract structured JSON matching exact schema keys:
+  const systemPrompt = `You are an expert RFP Analyst. Analyze the provided Request for Proposal (RFP) document and extract structured JSON matching exact schema keys:
 {
   "isRfp": boolean,
   "notRfpReason": string,

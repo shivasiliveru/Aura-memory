@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Proposal Intelligence — AI Proposal & RFP Agent with Hindsight Memory" },
+      { title: "Aura Memory — AI Proposal & RFP Agent with Hindsight Memory" },
       {
         name: "description",
         content:
@@ -125,7 +125,7 @@ function Index() {
         {isLoading ? (
           <div className="flex h-64 items-center justify-center space-x-2 text-muted-foreground">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
-            <span className="text-sm font-medium">Loading Proposal Intelligence...</span>
+            <span className="text-sm font-medium">Loading Aura Memory...</span>
           </div>
         ) : (
           <>

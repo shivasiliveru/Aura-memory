@@ -1,4 +1,4 @@
-# Proposal Intelligence — AI Proposal & RFP Agent
+# Aura Memory — AI Proposal & RFP Agent
 
 An AI-powered proposal generation platform that **learns from every outcome**. Built with TanStack Start, React 19, TypeScript, and integrated with a real LLM and the [Hindsight](https://github.com/vectorize-io/hindsight) long-term memory system.
 

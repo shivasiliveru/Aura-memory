@@ -65,7 +65,7 @@ export function DashboardView({
               <span>Hindsight Memory-Driven Proposal Agent</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              AI Proposal Intelligence Dashboard
+              Aura Memory Dashboard
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
               Every proposal outcome is stored into long-term memory. Future proposals automatically

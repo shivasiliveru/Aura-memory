@@ -1,5 +1,5 @@
 /**
- * Accuracy & robustness evaluation for the Proposal Intelligence agent.
+ * Accuracy & robustness evaluation for the Aura Memory agent.
  * ============================================================
  * Read-only: never saves proposals or records outcomes, so it is safe against
  * the live deployment. Uses the same API as the UI.
