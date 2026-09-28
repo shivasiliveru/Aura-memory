@@ -40,10 +40,15 @@ export function buildInsights(): InsightsPayload {
   return { winRateByIndustry, successPatterns, failurePatterns, insights };
 }
 
+/** Counts patterns, merging case/spacing variants under the first spelling seen. */
 function tally(values: string[]) {
-  const counts = new Map<string, number>();
-  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
-  return Array.from(counts.entries())
-    .map(([pattern, count]) => ({ pattern, count }))
-    .sort((a, b) => b.count - a.count);
+  const counts = new Map<string, { pattern: string; count: number }>();
+  for (const v of values) {
+    const key = v.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!key) continue;
+    const entry = counts.get(key) ?? { pattern: v, count: 0 };
+    entry.count += 1;
+    counts.set(key, entry);
+  }
+  return Array.from(counts.values()).sort((a, b) => b.count - a.count);
 }

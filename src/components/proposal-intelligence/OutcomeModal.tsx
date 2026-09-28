@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Memory, Outcome, Proposal } from "@/types";
+import { LOST_FACTOR_OPTIONS, WON_FACTOR_OPTIONS } from "@/lib/outcome-factors";
 
 interface OutcomeModalProps {
   open: boolean;
@@ -31,28 +32,6 @@ interface OutcomeModalProps {
   proposal: Proposal;
   onOutcomeSaved: (proposalId: string, outcome: Outcome, memory: Memory) => void;
 }
-
-const WON_FACTOR_OPTIONS = [
-  "Detailed Security Architecture",
-  "Early Compliance Chapter",
-  "Specific Implementation Timeline",
-  "Quantified ROI / Payback Model",
-  "Technical Depth & Integration Detail",
-  "Customized Workflow Mapping",
-  "Competitive & Transparent Pricing",
-  "Named Workstream Leads",
-];
-
-const LOST_FACTOR_OPTIONS = [
-  "Generic Pricing Language",
-  "Weak ROI Explanation",
-  "Conceptual / Vague Implementation Plan",
-  "Insufficient Technical Detail",
-  "Generic Template Messaging",
-  "Missing Compliance Evidence",
-  "Lack of Customization",
-  "Competitor Specialist Advantage",
-];
 
 export function OutcomeModal({ open, onOpenChange, proposal, onOutcomeSaved }: OutcomeModalProps) {
   const [status, setStatus] = useState<Outcome>("won");

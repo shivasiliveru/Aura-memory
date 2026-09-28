@@ -1,5 +1,7 @@
 import type { Industry, RFPAnalysis } from "@/types";
-import { analyzeRFPWithLLM, getLLMConfig } from "@/services/ai/llm.server";
+import { NotAnRfpError, analyzeRFPWithLLM, getLLMConfig } from "@/services/ai/llm.server";
+
+export { NotAnRfpError };
 
 /**
  * RFP processing service.
@@ -67,6 +69,8 @@ export async function analyzeRFP(input: AnalyzeInput): Promise<RFPAnalysis> {
       }
       return llmResult;
     } catch (err) {
+      // Not an RFP is a verdict, not a failure — don't paper over it with the fallback parser.
+      if (err instanceof NotAnRfpError) throw err;
       console.warn("LLM RFP analysis failed, falling back to signal parser:", err);
     }
   }

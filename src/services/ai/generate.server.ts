@@ -45,14 +45,44 @@ export async function generateProposalSections(input: GenerateInput): Promise<Pr
       const recalledMemories: RecalledMemory[] = input.useMemory
         ? input.recommendation.basedOn
         : [];
-      return await generateProposalSectionsWithLLM({
+      const request = {
         title: input.title,
         clientName: input.clientName,
         analysis: input.analysis,
         recommendation: input.recommendation,
         recalledMemories,
         useMemory: input.useMemory,
-      });
+      };
+      let sections = canonicalize(
+        await generateProposalSectionsWithLLM({ ...request, sections: SECTION_TITLES }),
+      );
+
+      // LLMs sometimes stop before the last sections; ask again for just the missing ones.
+      let missing = SECTION_TITLES.filter((t) => !sections.some((s) => s.title === t));
+      if (missing.length) {
+        console.warn(`LLM omitted ${missing.join(", ")}; requesting them separately.`);
+        try {
+          const extra = canonicalize(
+            await generateProposalSectionsWithLLM({ ...request, sections: missing }),
+          );
+          sections = [
+            ...sections,
+            ...extra.filter((s) => missing.includes(s.title as SectionTitle)),
+          ];
+        } catch (err) {
+          console.warn("Follow-up section generation failed:", err);
+        }
+        missing = SECTION_TITLES.filter((t) => !sections.some((s) => s.title === t));
+      }
+      if (missing.length) {
+        const template = localGenerateProposalSections(input);
+        sections = [
+          ...sections,
+          ...template.filter((s) => missing.includes(s.title as SectionTitle)),
+        ];
+      }
+
+      return SECTION_TITLES.map((t) => sections.find((s) => s.title === t)!);
     } catch (err) {
       console.warn(
         "LLM proposal section generation failed, falling back to structured generator:",
@@ -62,6 +92,23 @@ export async function generateProposalSections(input: GenerateInput): Promise<Pr
   }
 
   return localGenerateProposalSections(input);
+}
+
+const titleKey = (t: string) => t.toLowerCase().replace(/[^a-z]/g, "");
+const CANONICAL = new Map(SECTION_TITLES.map((t) => [titleKey(t), t]));
+
+/** Maps LLM section titles ("ROI/Business Value", "1. Pricing") onto the canonical ones, dropping duplicates. */
+function canonicalize(sections: ProposalSection[]): ProposalSection[] {
+  const out: ProposalSection[] = [];
+  for (const s of sections) {
+    const key = titleKey(s.title.replace(/^\s*\d+[.)]\s*/, ""));
+    const title =
+      CANONICAL.get(key) ??
+      SECTION_TITLES.find((t) => key.includes(titleKey(t)) || titleKey(t).includes(key));
+    if (!title || out.some((o) => o.title === title) || !s.content?.trim()) continue;
+    out.push({ ...s, title, id: slug(title) });
+  }
+  return out;
 }
 
 function localGenerateProposalSections(input: GenerateInput): ProposalSection[] {

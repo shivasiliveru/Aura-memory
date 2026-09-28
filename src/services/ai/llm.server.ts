@@ -162,6 +162,14 @@ export async function callLLM(
   }
 }
 
+/** The submitted text is not a business request for proposal (e.g. a personal question). */
+export class NotAnRfpError extends Error {
+  constructor(reason: string) {
+    super(reason);
+    this.name = "NotAnRfpError";
+  }
+}
+
 export async function analyzeRFPWithLLM(
   content: string,
   title: string,
@@ -170,6 +178,8 @@ export async function analyzeRFPWithLLM(
 ): Promise<RFPAnalysis> {
   const systemPrompt = `You are an expert Proposal Intelligence RFP Analyst. Analyze the provided Request for Proposal (RFP) document and extract structured JSON matching exact schema keys:
 {
+  "isRfp": boolean,
+  "notRfpReason": string,
   "client": string,
   "industry": string,
   "keyRequirements": string[],
@@ -179,6 +189,7 @@ export async function analyzeRFPWithLLM(
   "evaluationCriteria": string[],
   "keywords": string[]
 }
+First decide "isRfp": true if the text describes an organisation's business need for a product, service or project that a vendor could propose on (a formal RFP, tender, RFQ, project brief, or even a one-line business requirement). false for personal questions, medical/health advice requests, chit-chat, or anything no vendor could write a proposal for. When false, give a one-sentence "notRfpReason" and leave the other fields empty — do NOT invent requirements.
 Return ONLY valid JSON.`;
 
   const prompt = `Client: ${clientName}
@@ -194,6 +205,12 @@ ${content}`;
     .replace(/\s*```$/, "")
     .trim();
   const parsed = JSON.parse(cleanJson);
+
+  if (parsed.isRfp === false) {
+    throw new NotAnRfpError(
+      String(parsed.notRfpReason || "This text does not describe a business need to propose on."),
+    );
+  }
 
   return {
     client: parsed.client || clientName,
@@ -218,8 +235,11 @@ export async function generateProposalSectionsWithLLM(input: {
   recommendation: AgentRecommendation;
   recalledMemories: RecalledMemory[];
   useMemory: boolean;
+  /** Section titles to write, in order. */
+  sections: readonly string[];
 }): Promise<ProposalSection[]> {
   const { title, clientName, analysis, recommendation, recalledMemories, useMemory } = input;
+  const sectionList = input.sections.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
   const memoriesSummary =
     useMemory && recalledMemories.length > 0
@@ -238,18 +258,9 @@ Content: ${m.content}`,
       : "No previous experiences used (Demo baseline state).";
 
   const systemPrompt = `You are a world-class AI Proposal & RFP Writer.
-Generate a comprehensive, highly customized proposal composed of 11 exact sections:
-1. Executive Summary
-2. Understanding of Requirements
-3. Proposed Solution
-4. Technical Approach
-5. Security & Compliance
-6. Implementation Plan
-7. Timeline
-8. Team
-9. Pricing
-10. ROI / Business Value
-11. Conclusion
+Generate a comprehensive, highly customized proposal composed of exactly these ${input.sections.length} sections, with these exact titles, in this order:
+${sectionList}
+Write every listed section — never stop early. Keep each section focused (roughly 80-200 words) so all of them fit.
 
 CRITICAL REQUIREMENT:
 If memories/recalled experiences are provided, you MUST actively apply their lessons:

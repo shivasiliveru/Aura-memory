@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { analyzeRFP } from "@/services/rfp/analyze.server";
+import { NotAnRfpError, analyzeRFP } from "@/services/rfp/analyze.server";
 import {
   HindsightError,
   getMemoryStatus,
@@ -27,13 +27,24 @@ export const Route = createFileRoute("/api/rfp/analyze")({
           return Response.json({ error: "Invalid RFP payload" }, { status: 400 });
         }
         const input = parsed.data;
-        const analysis = await analyzeRFP({
-          title: input.title,
-          clientName: input.clientName,
-          industry: input.industry as Industry,
-          deadline: input.deadline,
-          content: input.content,
-        });
+        let analysis;
+        try {
+          analysis = await analyzeRFP({
+            title: input.title,
+            clientName: input.clientName,
+            industry: input.industry as Industry,
+            deadline: input.deadline,
+            content: input.content,
+          });
+        } catch (err) {
+          if (err instanceof NotAnRfpError) {
+            return Response.json(
+              { error: `This doesn't look like an RFP: ${err.message}`, notRfp: true },
+              { status: 422 },
+            );
+          }
+          throw err;
+        }
         let recalled;
         try {
           recalled = await recallMemories({

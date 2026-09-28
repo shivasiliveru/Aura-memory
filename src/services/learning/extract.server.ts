@@ -1,5 +1,6 @@
 import type { Outcome, Proposal } from "@/types";
 import { callLLM, getLLMConfig } from "@/services/ai/llm.server";
+import { LOST_FACTOR_OPTIONS, WON_FACTOR_OPTIONS } from "@/lib/outcome-factors";
 
 /**
  * Learning extraction: turns a proposal + its outcome + the user's feedback into
@@ -29,7 +30,15 @@ const strings = (v: unknown): string[] =>
     ? v.filter((s): s is string => typeof s === "string" && !!s.trim()).map((s) => s.trim())
     : [];
 
-const unique = (values: string[]) => Array.from(new Set(values));
+/** Dedupes ignoring case, spacing and punctuation ("NamedWorkstreamLeads" = "Named Workstream Leads"); first spelling wins. */
+const unique = (values: string[]) => {
+  const seen = new Map<string, string>();
+  for (const v of values) {
+    const key = v.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (key && !seen.has(key)) seen.set(key, v);
+  }
+  return Array.from(seen.values());
+};
 
 function parseJsonObject(text: string): Record<string, unknown> {
   const start = text.indexOf("{");
@@ -77,6 +86,9 @@ Rules:
 - The team's feedback is the strongest signal for WHY the outcome happened; the proposal text shows WHAT approach was used.
 - For PENDING outcomes, describe the approach taken and early signals only — do not claim it worked or failed.
 - Write each item as a short, specific, reusable sentence (not a generic best practice).
+- For successfulPatterns / failedPatterns, reuse these standard labels exactly when one fits, and only add a new short label when none does:
+  Helped: ${WON_FACTOR_OPTIONS.join("; ")}
+  Hurt: ${LOST_FACTOR_OPTIONS.join("; ")}
 Return ONLY a JSON object:
 {
   "summary": string (2-3 sentences: what was proposed, the outcome, and the main reason),
