@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { memories } from "@/services/proposals/store.server";
+import { memories, storeBackend } from "@/services/proposals/store.server";
 import { getMemoryStatus } from "@/services/hindsight/hindsight.server";
 
 export const Route = createFileRoute("/api/memory")({
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/api/memory")({
         Response.json({
           memories: [...memories].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
           status: await getMemoryStatus(),
+          storage: storeBackend(),
         }),
     },
   },

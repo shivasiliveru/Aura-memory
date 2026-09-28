@@ -6,6 +6,7 @@
  *
  * Background history (gives the dashboard and memory bank realistic depth):
  *   FinTech → WON · SaaS → LOST · Manufacturing → PENDING
+ *   Healthcare → LOST · Banking → WON · SaaS → WON (learned from the SaaS loss)
  *
  * The learning-loop scenario shown to judges:
  *   RFP 1: Healthcare (St. Jude)          → WON  → lessons retained
@@ -192,6 +193,80 @@ Evaluation criteria: downtime reduction evidence, OT security, rollout plan, tot
       status: "pending",
       lessons:
         "Submitted. Early feedback from the plant managers was positive about the per-plant downtime cost model.",
+    },
+  },
+  {
+    rfp: {
+      title: "Clinical Scheduling & Patient Engagement Suite",
+      clientName: "Riverside Community Hospital",
+      industry: "Healthcare",
+      deadline: "2026-05-15",
+      estimatedValue: 310000,
+      content: `Riverside Community Hospital seeks a patient engagement and clinical scheduling suite.
+Requirements:
+- Online booking, reminders and waitlist management across 9 departments.
+- HIPAA compliance and integration with the existing Meditech EHR.
+- Clinician and front-desk training plan; go-live within 4 months.
+Evaluation criteria: clinical workflow fit, adoption plan, compliance, price.`,
+    },
+    outcome: {
+      status: "lost",
+      failureFactors: ["Lack of Customization", "Conceptual / Vague Implementation Plan"],
+      lessons:
+        "Debrief: nursing leadership said we never showed how scheduling would work in their departments, and the training plan was one paragraph. " +
+        "The winner mapped each department's workflow and included a clinician training schedule. Healthcare buyers need to see their own clinical reality.",
+    },
+  },
+  {
+    rfp: {
+      title: "Enterprise Risk Reporting Platform",
+      clientName: "Meridian Bank",
+      industry: "Banking",
+      deadline: "2026-04-30",
+      estimatedValue: 910000,
+      content: `Meridian Bank requests proposals for an enterprise risk reporting platform.
+Requirements:
+- Consolidated credit, market and operational risk reporting for the board and regulators.
+- Integration with Temenos core banking and the data warehouse; full audit trail.
+- Basel III / BCBS 239 alignment evidence.
+Evaluation criteria: risk reduction evidence, integration detail, regulatory alignment, total cost.`,
+    },
+    outcome: {
+      status: "won",
+      successfulFactors: [
+        "Quantified ROI / Payback Model",
+        "Technical Depth & Integration Detail",
+        "Competitive & Transparent Pricing",
+      ],
+      lessons:
+        "The CRO said we won because risk reduction was quantified in basis points against their own baseline, and the Temenos integration named specific APIs and the audit trail schema. " +
+        "Itemised pricing per workstream removed any budget concerns.",
+    },
+  },
+  {
+    rfp: {
+      title: "Zero-Downtime Cloud Database Migration",
+      clientName: "Brightline Analytics",
+      industry: "SaaS",
+      deadline: "2026-08-10",
+      estimatedValue: 420000,
+      content: `Brightline Analytics needs to migrate 60 TB of customer data from self-managed Postgres to a managed cloud database.
+Requirements:
+- Zero downtime for a 24/7 multi-tenant product; tested rollback for each wave.
+- SOC 2 evidence and encryption in transit and at rest.
+- Completion within 10 weeks.
+Evaluation criteria: migration safety, technical depth, timeline realism, cost.`,
+    },
+    outcome: {
+      status: "won",
+      successfulFactors: [
+        "Technical Depth & Integration Detail",
+        "Specific Implementation Timeline",
+        "Named Workstream Leads",
+      ],
+      lessons:
+        "The VP Engineering said the per-wave cutover runbook with tested rollback steps was decisive — it directly fixed what cost us the Lumen Cloud bid. " +
+        "A week-by-week timeline with named leads made the 10-week deadline credible.",
     },
   },
 ];
