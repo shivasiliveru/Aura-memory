@@ -10,33 +10,174 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiClientsRouteImport } from './routes/api/clients'
+import { Route as ApiInsightsRouteImport } from './routes/api/insights'
+import { Route as ApiMemoryRouteImport } from './routes/api/memory'
+import { Route as ApiProposalsRouteImport } from './routes/api/proposals'
+import { Route as ApiClientsIdRouteImport } from './routes/api/clients.$id'
+import { Route as ApiMemoryRecallRouteImport } from './routes/api/memory.recall'
+import { Route as ApiMemoryRetainRouteImport } from './routes/api/memory.retain'
+import { Route as ApiProposalsIdRouteImport } from './routes/api/proposals.$id'
+import { Route as ApiProposalsGenerateRouteImport } from './routes/api/proposals.generate'
+import { Route as ApiRfpAnalyzeRouteImport } from './routes/api/rfp.analyze'
+import { Route as ApiProposalsIdOutcomeRouteImport } from './routes/api/proposals.$id.outcome'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientsRoute = ApiClientsRouteImport.update({
+  id: '/api/clients',
+  path: '/api/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInsightsRoute = ApiInsightsRouteImport.update({
+  id: '/api/insights',
+  path: '/api/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMemoryRoute = ApiMemoryRouteImport.update({
+  id: '/api/memory',
+  path: '/api/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProposalsRoute = ApiProposalsRouteImport.update({
+  id: '/api/proposals',
+  path: '/api/proposals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClientsIdRoute = ApiClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiClientsRoute,
+} as any)
+const ApiMemoryRecallRoute = ApiMemoryRecallRouteImport.update({
+  id: '/recall',
+  path: '/recall',
+  getParentRoute: () => ApiMemoryRoute,
+} as any)
+const ApiMemoryRetainRoute = ApiMemoryRetainRouteImport.update({
+  id: '/retain',
+  path: '/retain',
+  getParentRoute: () => ApiMemoryRoute,
+} as any)
+const ApiProposalsIdRoute = ApiProposalsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiProposalsRoute,
+} as any)
+const ApiProposalsGenerateRoute = ApiProposalsGenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
+  getParentRoute: () => ApiProposalsRoute,
+} as any)
+const ApiRfpAnalyzeRoute = ApiRfpAnalyzeRouteImport.update({
+  id: '/api/rfp/analyze',
+  path: '/api/rfp/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProposalsIdOutcomeRoute = ApiProposalsIdOutcomeRouteImport.update({
+  id: '/outcome',
+  path: '/outcome',
+  getParentRoute: () => ApiProposalsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
+  '/api/insights': typeof ApiInsightsRoute
+  '/api/memory': typeof ApiMemoryRouteWithChildren
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/clients/$id': typeof ApiClientsIdRoute
+  '/api/memory/recall': typeof ApiMemoryRecallRoute
+  '/api/memory/retain': typeof ApiMemoryRetainRoute
+  '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
+  '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
+  '/api/insights': typeof ApiInsightsRoute
+  '/api/memory': typeof ApiMemoryRouteWithChildren
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/clients/$id': typeof ApiClientsIdRoute
+  '/api/memory/recall': typeof ApiMemoryRecallRoute
+  '/api/memory/retain': typeof ApiMemoryRetainRoute
+  '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
+  '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/clients': typeof ApiClientsRouteWithChildren
+  '/api/insights': typeof ApiInsightsRoute
+  '/api/memory': typeof ApiMemoryRouteWithChildren
+  '/api/proposals': typeof ApiProposalsRouteWithChildren
+  '/api/clients/$id': typeof ApiClientsIdRoute
+  '/api/memory/recall': typeof ApiMemoryRecallRoute
+  '/api/memory/retain': typeof ApiMemoryRetainRoute
+  '/api/proposals/$id': typeof ApiProposalsIdRouteWithChildren
+  '/api/proposals/generate': typeof ApiProposalsGenerateRoute
+  '/api/rfp/analyze': typeof ApiRfpAnalyzeRoute
+  '/api/proposals/$id/outcome': typeof ApiProposalsIdOutcomeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api/clients'
+    | '/api/insights'
+    | '/api/memory'
+    | '/api/proposals'
+    | '/api/clients/$id'
+    | '/api/memory/recall'
+    | '/api/memory/retain'
+    | '/api/proposals/$id'
+    | '/api/proposals/generate'
+    | '/api/rfp/analyze'
+    | '/api/proposals/$id/outcome'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api/clients'
+    | '/api/insights'
+    | '/api/memory'
+    | '/api/proposals'
+    | '/api/clients/$id'
+    | '/api/memory/recall'
+    | '/api/memory/retain'
+    | '/api/proposals/$id'
+    | '/api/proposals/generate'
+    | '/api/rfp/analyze'
+    | '/api/proposals/$id/outcome'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/clients'
+    | '/api/insights'
+    | '/api/memory'
+    | '/api/proposals'
+    | '/api/clients/$id'
+    | '/api/memory/recall'
+    | '/api/memory/retain'
+    | '/api/proposals/$id'
+    | '/api/proposals/generate'
+    | '/api/rfp/analyze'
+    | '/api/proposals/$id/outcome'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiClientsRoute: typeof ApiClientsRouteWithChildren
+  ApiInsightsRoute: typeof ApiInsightsRoute
+  ApiMemoryRoute: typeof ApiMemoryRouteWithChildren
+  ApiProposalsRoute: typeof ApiProposalsRouteWithChildren
+  ApiRfpAnalyzeRoute: typeof ApiRfpAnalyzeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +189,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/clients': {
+      id: '/api/clients'
+      path: '/api/clients'
+      fullPath: '/api/clients'
+      preLoaderRoute: typeof ApiClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/insights': {
+      id: '/api/insights'
+      path: '/api/insights'
+      fullPath: '/api/insights'
+      preLoaderRoute: typeof ApiInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/memory': {
+      id: '/api/memory'
+      path: '/api/memory'
+      fullPath: '/api/memory'
+      preLoaderRoute: typeof ApiMemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/proposals': {
+      id: '/api/proposals'
+      path: '/api/proposals'
+      fullPath: '/api/proposals'
+      preLoaderRoute: typeof ApiProposalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clients/$id': {
+      id: '/api/clients/$id'
+      path: '/$id'
+      fullPath: '/api/clients/$id'
+      preLoaderRoute: typeof ApiClientsIdRouteImport
+      parentRoute: typeof ApiClientsRoute
+    }
+    '/api/memory/recall': {
+      id: '/api/memory/recall'
+      path: '/recall'
+      fullPath: '/api/memory/recall'
+      preLoaderRoute: typeof ApiMemoryRecallRouteImport
+      parentRoute: typeof ApiMemoryRoute
+    }
+    '/api/memory/retain': {
+      id: '/api/memory/retain'
+      path: '/retain'
+      fullPath: '/api/memory/retain'
+      preLoaderRoute: typeof ApiMemoryRetainRouteImport
+      parentRoute: typeof ApiMemoryRoute
+    }
+    '/api/proposals/$id': {
+      id: '/api/proposals/$id'
+      path: '/$id'
+      fullPath: '/api/proposals/$id'
+      preLoaderRoute: typeof ApiProposalsIdRouteImport
+      parentRoute: typeof ApiProposalsRoute
+    }
+    '/api/proposals/generate': {
+      id: '/api/proposals/generate'
+      path: '/generate'
+      fullPath: '/api/proposals/generate'
+      preLoaderRoute: typeof ApiProposalsGenerateRouteImport
+      parentRoute: typeof ApiProposalsRoute
+    }
+    '/api/rfp/analyze': {
+      id: '/api/rfp/analyze'
+      path: '/api/rfp/analyze'
+      fullPath: '/api/rfp/analyze'
+      preLoaderRoute: typeof ApiRfpAnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/proposals/$id/outcome': {
+      id: '/api/proposals/$id/outcome'
+      path: '/outcome'
+      fullPath: '/api/proposals/$id/outcome'
+      preLoaderRoute: typeof ApiProposalsIdOutcomeRouteImport
+      parentRoute: typeof ApiProposalsIdRoute
+    }
   }
 }
 
+interface ApiClientsRouteChildren {
+  ApiClientsIdRoute: typeof ApiClientsIdRoute
+}
+
+const ApiClientsRouteChildren: ApiClientsRouteChildren = {
+  ApiClientsIdRoute: ApiClientsIdRoute,
+}
+
+const ApiClientsRouteWithChildren = ApiClientsRoute._addFileChildren(
+  ApiClientsRouteChildren,
+)
+
+interface ApiMemoryRouteChildren {
+  ApiMemoryRecallRoute: typeof ApiMemoryRecallRoute
+  ApiMemoryRetainRoute: typeof ApiMemoryRetainRoute
+}
+
+const ApiMemoryRouteChildren: ApiMemoryRouteChildren = {
+  ApiMemoryRecallRoute: ApiMemoryRecallRoute,
+  ApiMemoryRetainRoute: ApiMemoryRetainRoute,
+}
+
+const ApiMemoryRouteWithChildren = ApiMemoryRoute._addFileChildren(
+  ApiMemoryRouteChildren,
+)
+
+interface ApiProposalsIdRouteChildren {
+  ApiProposalsIdOutcomeRoute: typeof ApiProposalsIdOutcomeRoute
+}
+
+const ApiProposalsIdRouteChildren: ApiProposalsIdRouteChildren = {
+  ApiProposalsIdOutcomeRoute: ApiProposalsIdOutcomeRoute,
+}
+
+const ApiProposalsIdRouteWithChildren = ApiProposalsIdRoute._addFileChildren(
+  ApiProposalsIdRouteChildren,
+)
+
+interface ApiProposalsRouteChildren {
+  ApiProposalsIdRoute: typeof ApiProposalsIdRouteWithChildren
+  ApiProposalsGenerateRoute: typeof ApiProposalsGenerateRoute
+}
+
+const ApiProposalsRouteChildren: ApiProposalsRouteChildren = {
+  ApiProposalsIdRoute: ApiProposalsIdRouteWithChildren,
+  ApiProposalsGenerateRoute: ApiProposalsGenerateRoute,
+}
+
+const ApiProposalsRouteWithChildren = ApiProposalsRoute._addFileChildren(
+  ApiProposalsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiClientsRoute: ApiClientsRouteWithChildren,
+  ApiInsightsRoute: ApiInsightsRoute,
+  ApiMemoryRoute: ApiMemoryRouteWithChildren,
+  ApiProposalsRoute: ApiProposalsRouteWithChildren,
+  ApiRfpAnalyzeRoute: ApiRfpAnalyzeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
