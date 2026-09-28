@@ -130,27 +130,37 @@ export async function callLLM(
   } else {
     // OpenAI or OpenAI-compatible format
     const url = `${config.baseUrl.replace(/\/$/, "")}/chat/completions`;
-    // gpt-oss models reason before answering; low effort keeps answers fast and within
-    // the output budget (high effort truncated 11-section proposals).
-    const reasoningEffort =
-      process.env["LLM_REASONING_EFFORT"] || (/gpt-oss/i.test(config.model) ? "low" : "");
-    const res = await fetchWithRetry(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${config.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
-        ...(options.json ? { response_format: { type: "json_object" } } : {}),
-      }),
-    });
+    // Providers rate-limit per model, so a fallback model keeps the app answering when the
+    // primary is exhausted (e.g. Groq's free-tier daily token cap).
+    const models = [config.model, process.env["LLM_FALLBACK_MODEL"]].filter(
+      (m): m is string => !!m,
+    );
+    let res!: Response;
+    for (const [i, model] of models.entries()) {
+      // gpt-oss models reason before answering; low effort keeps answers fast and within
+      // the output budget (high effort truncated 11-section proposals).
+      const reasoningEffort =
+        process.env["LLM_REASONING_EFFORT"] || (/gpt-oss/i.test(model) ? "low" : "");
+      res = await fetchWithRetry(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+          ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
+          ...(options.json ? { response_format: { type: "json_object" } } : {}),
+        }),
+      });
+      if (res.status !== 429 || i === models.length - 1) break;
+      console.warn(`LLM model ${model} is rate-limited; falling back to ${models[i + 1]}.`);
+    }
 
     if (!res.ok) {
       const errText = await res.text();

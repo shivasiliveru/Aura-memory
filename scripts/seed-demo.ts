@@ -59,13 +59,37 @@ interface DemoOutcome {
 }
 
 async function post<T = Record<string, unknown>>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`POST ${path} failed (${res.status}): ${await res.text()}`);
-  return res.json() as Promise<T>;
+  // Retries dropped connections and gateway errors. Every call here is safe to repeat:
+  // re-recording an outcome replaces that proposal's memory rather than duplicating it.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) return (await res.json()) as T;
+      const text = await res.text();
+      if (res.status < 500 || attempt === 3) {
+        throw new Error(`POST ${path} failed (${res.status}): ${text}`);
+      }
+      console.log(`   ↻ HTTP ${res.status} on ${path}; retrying (${attempt}/2)`);
+    } catch (err) {
+      const network = err instanceof TypeError; // fetch failed / socket closed
+      if (!network || attempt === 3) throw err;
+      console.log(`   ↻ connection dropped on ${path}; retrying (${attempt}/2)`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  }
+}
+
+/** Proposals already on the server, by title — lets re-runs resume instead of duplicating. */
+async function existingProposals(): Promise<Map<string, { id: string; status: string }>> {
+  const res = await fetch(`${BASE_URL}/api/proposals`);
+  const { proposals } = (await res.json()) as {
+    proposals: { id: string; title: string; status: string }[];
+  };
+  return new Map(proposals.map((p) => [p.title, { id: p.id, status: p.status }]));
 }
 
 /** Analyze → recall → generate → save, exactly as the New RFP wizard does. */
@@ -475,9 +499,17 @@ async function run() {
 
   if (TRAIN_ONLY) {
     console.log("🎓 Extra training experiences");
+    const existing = await existingProposals();
     for (const { rfp, outcome } of TRAINING) {
       console.log(`\n📋 ${rfp.industry}: ${rfp.title} (${rfp.clientName})`);
-      const { id } = await runRFP(rfp);
+      const found = existing.get(rfp.title);
+      if (found && found.status !== "draft") {
+        console.log(`   ⏭  Already trained (${found.status.toUpperCase()}); skipping.`);
+        continue;
+      }
+      // A draft means a previous run saved the proposal but didn't record its outcome.
+      const id = found ? found.id : (await runRFP(rfp)).id;
+      if (found) console.log(`   ↺ Resuming saved proposal ${id}`);
       await recordOutcome(id, outcome);
     }
     console.log("\n✅ Training experiences retained.");
